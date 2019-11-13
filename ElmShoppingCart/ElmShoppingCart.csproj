@@ -1,9 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <UserSecretsId>4c0d0a84-728b-44da-8b7c-e1ef51a44b7a</UserSecretsId>
+    <SpaRoot>Elm\</SpaRoot>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SpaAssets Include="$(SpaRoot)assets\**"/>
+    <IndexHtml Include="$(SpaRoot)index.html"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0" />
@@ -18,7 +23,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Elm\" />
+    <Content Include="$(SpaRoot)" Exclude="**\*.elm"/>
+    <Content Remove="$(SpaRoot)elm.json" />
+    <Content Remove="wwwroot\**" />
+    <None Include="$(SpaRoot)"/>
+    <None Include="$(SpaRoot)elm.json"/>
+    <None Remove="$(SpaRoot)elm-stuff\**" />
+    <None Remove="wwwroot\**" />
   </ItemGroup>
+
+  <Target Name="CopyCustomContent" AfterTargets="Build">
+    <Exec WorkingDirectory="$(SpaRoot)" Command="elm make src\Main.elm --output ..\wwwroot\elm.js" />
+    <Message Text="Copying @(SpaOutput) to wwwroot"/>
+    <Copy SourceFiles="@(SpaAssets)" DestinationFolder="wwwroot\%(RecursiveDir)" />
+    <Copy SourceFiles="@(IndexHtml)" DestinationFolder="wwwroot\%(RecursiveDir)"/>
+  </Target>
 
 </Project>
