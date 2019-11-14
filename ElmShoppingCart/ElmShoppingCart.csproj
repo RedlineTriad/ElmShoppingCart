@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SpaAssets Include="$(SpaRoot)assets\**"/>
-    <IndexHtml Include="$(SpaRoot)index.html"/>
+    <SpaAssets Include="$(SpaRoot)assets\**" />
+    <IndexHtml Include="$(SpaRoot)index.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,20 +23,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="$(SpaRoot)" Exclude="**\*.elm"/>
+    <Content Include="$(SpaRoot)" Exclude="**\*.elm" />
     <Content Remove="$(SpaRoot)elm.json" />
     <Content Remove="wwwroot\**" />
-    <None Include="$(SpaRoot)"/>
-    <None Include="$(SpaRoot)elm.json"/>
+    <None Include="$(SpaRoot)" />
+    <None Include="$(SpaRoot)elm.json" />
     <None Remove="$(SpaRoot)elm-stuff\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="Build">
     <Exec WorkingDirectory="$(SpaRoot)" Command="elm make src\Main.elm --output ..\wwwroot\elm.js" />
-    <Message Text="Copying @(SpaOutput) to wwwroot"/>
+    <Message Text="Copying @(SpaOutput) to wwwroot" />
     <Copy SourceFiles="@(SpaAssets)" DestinationFolder="wwwroot\%(RecursiveDir)" />
-    <Copy SourceFiles="@(IndexHtml)" DestinationFolder="wwwroot\%(RecursiveDir)"/>
+    <Copy SourceFiles="@(IndexHtml)" DestinationFolder="wwwroot\%(RecursiveDir)" />
+  </Target>
+
+  <Target Name="wwwroot" AfterTargets="Clean">
+    <RemoveDir Directories="wwwroot"/>
   </Target>
 
 </Project>
