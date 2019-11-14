@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <SpaRoot>Elm\</SpaRoot>
+    <SpaRoot>Elm</SpaRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <SpaAssets Include="$(SpaRoot)assets\**" />
-    <IndexHtml Include="$(SpaRoot)index.html" />
+    <SpaAssets Include="$(SpaRoot)\assets\**" />
+    <IndexHtml Include="$(SpaRoot)\index.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,11 +24,11 @@
 
   <ItemGroup>
     <Content Include="$(SpaRoot)" Exclude="**\*.elm" />
-    <Content Remove="$(SpaRoot)elm.json" />
+    <Content Remove="$(SpaRoot)\elm.json" />
     <Content Remove="wwwroot\**" />
     <None Include="$(SpaRoot)" />
-    <None Include="$(SpaRoot)elm.json" />
-    <None Remove="$(SpaRoot)elm-stuff\**" />
+    <None Include="$(SpaRoot)\elm.json" />
+    <None Remove="$(SpaRoot)\elm-stuff\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
