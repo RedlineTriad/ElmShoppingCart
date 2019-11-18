@@ -1,5 +1,6 @@
 module Login exposing (Model, Msg, init, update, view)
 
+import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
@@ -14,7 +15,7 @@ import Json.Encode as Encode
 type alias Model =
     { email : String
     , password : String
-    , jwt : Maybe String
+    , jwt : Maybe Endpoint.Jwt
     , loggingIn : Bool
     }
 
@@ -47,13 +48,11 @@ update msg model =
         GetJWT ->
             ( { model | loggingIn = True }, getJWT model.email model.password )
 
-        GotJWT result ->
-            case result of
-                Ok jwt ->
-                    ( { model | loggingIn = False, jwt = Just jwt }, Cmd.none )
+        GotJWT (Ok jwt) ->
+            ( { model | loggingIn = False, jwt = Just (Endpoint.encodeJwt jwt) }, Cmd.none )
 
-                Err err ->
-                    ( { model | loggingIn = False }, Cmd.none )
+        GotJWT (Err err) ->
+            ( { model | loggingIn = False }, Cmd.none )
 
 
 view : Model -> List (Html Msg)

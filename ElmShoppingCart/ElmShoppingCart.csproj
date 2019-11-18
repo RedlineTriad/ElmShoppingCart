@@ -18,6 +18,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.0.0-rc3.final" />
   </ItemGroup>
@@ -40,7 +44,7 @@
   </Target>
 
   <Target Name="wwwroot" AfterTargets="Clean">
-    <RemoveDir Directories="wwwroot"/>
+    <RemoveDir Directories="wwwroot" />
   </Target>
 
 </Project>

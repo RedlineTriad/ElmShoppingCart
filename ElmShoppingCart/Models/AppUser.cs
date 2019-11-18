@@ -8,5 +8,6 @@ namespace ElmShoppingCart.Models
 {
     public class AppUser: IdentityUser<Guid>
     {
+        public ISet<Order> Orders { get; set; }
     }
 }

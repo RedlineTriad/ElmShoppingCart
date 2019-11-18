@@ -73,6 +73,14 @@ namespace ElmShoppingCart.Controllers
             return BadRequest();
         }
 
+        [HttpGet]
+        public async Task<ActionResult<string>> GetUserName(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+
+            return user?.UserName ?? (ActionResult<string>)NotFound();
+        }
+
         private string GenerateJwtToken(string email, AppUser user)
         {
             var jwtConfig = configuration.GetSection("JWT");

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
+using ElmShoppingCart.Models;
 
 namespace ElmShoppingCart.Models
 {
@@ -11,5 +12,6 @@ namespace ElmShoppingCart.Models
         {
 
         }
+        public DbSet<ElmShoppingCart.Models.Order> Order { get; set; }
     }
 }
