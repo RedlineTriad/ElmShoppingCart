@@ -134,48 +134,46 @@ viewHeader model =
 
 viewBody : Model -> Html Msg
 viewBody model =
-    Grid.row []
-        [ Grid.col []
-            [ Grid.row [ Row.centerMd ]
-                [ Grid.col []
-                    [ case model.login.jwt of
-                        Just jwt ->
-                            Button.button
-                                [ Button.primary, Button.attrs [ onClick (GetOrders jwt) ] ]
-                                (if model.loading then
-                                    [ Spinner.spinner
-                                        [ Spinner.small, Spinner.attrs [ Spacing.mr1 ] ]
-                                        []
-                                    , text "Loading..."
-                                    ]
+    Grid.container []
+        [ Grid.row [ Row.centerMd ]
+            [ Grid.col []
+                [ case model.login.jwt of
+                    Just jwt ->
+                        Button.button
+                            [ Button.primary, Button.attrs [ onClick (GetOrders jwt) ] ]
+                            (if model.loading then
+                                [ Spinner.spinner
+                                    [ Spinner.small, Spinner.attrs [ Spacing.mr1 ] ]
+                                    []
+                                , text "Loading..."
+                                ]
 
-                                 else
-                                    [ text "Refresh" ]
-                                )
+                             else
+                                [ text "Refresh" ]
+                            )
 
-                        Nothing ->
-                            text ""
-                    ]
+                    Nothing ->
+                        text ""
                 ]
-            , Grid.row []
-                [ Grid.col []
-                    (case model.orders of
-                        Just orders ->
-                            orders |> List.map Order.viewOrder
+            ]
+        , Grid.row []
+            [ Grid.col []
+                [ case model.orders of
+                    Just orders ->
+                        Order.viewOrders orders
 
-                        Nothing ->
-                            [ text "" ]
-                    )
+                    Nothing ->
+                        text ""
                 ]
-            , Grid.row []
-                [ Grid.col []
-                    [ case model.login.jwt of
-                        Just _ ->
-                            Html.map (\a -> OrderMsg a) (Order.viewCreate model.orderModel)
+            ]
+        , Grid.row []
+            [ Grid.col []
+                [ case model.login.jwt of
+                    Just _ ->
+                        Html.map (\a -> OrderMsg a) (Order.viewCreate model.orderModel)
 
-                        Nothing ->
-                            text ""
-                    ]
+                    Nothing ->
+                        text ""
                 ]
             ]
         ]

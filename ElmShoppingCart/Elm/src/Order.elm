@@ -1,4 +1,4 @@
-module Order exposing (CreateModel, Msg(..), Order, addOrder, createInit, getOrders, orderDecoder, updateCreate, viewCreate, viewOrder)
+module Order exposing (CreateModel, Msg(..), Order, addOrder, createInit, getOrders, orderDecoder, updateCreate, viewCreate, viewOrder, viewOrders)
 
 import Api.Endpoint as Endpoint exposing (Jwt)
 import Bootstrap.Button as Button
@@ -7,6 +7,7 @@ import Bootstrap.Card.Block as Block
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Spinner as Spinner
+import Bootstrap.Table as Table
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -53,16 +54,27 @@ type alias CreateForm =
 -- VIEW
 
 
-viewOrder : Order -> Html msg
-viewOrder order =
-    Card.config [ Card.attrs [ Spacing.my2 ] ]
-        |> Card.header [ class "text-center" ]
-            [ h3 [ Spacing.mt2 ] [ text order.product ] ]
-        |> Card.block []
-            [ Block.text [] [ text (String.fromInt order.amount) ]
-            , Block.text [] [ text <| String.fromInt <| toDay utc order.creationTime ]
-            ]
-        |> Card.view
+viewOrders : List Order -> Html msg
+viewOrders orders =
+    Table.table
+        { options = [ Table.striped, Table.hover ]
+        , thead =
+            Table.simpleThead
+                [ Table.th [] [ text "Product" ]
+                , Table.th [] [ text "Amount" ]
+                ]
+        , tbody =
+            Table.tbody []
+                (List.map
+                    (\order ->
+                        Table.tr []
+                            [ Table.td [] [ text order.product ]
+                            , Table.td [] [ text (String.fromInt order.amount) ]
+                            ]
+                    )
+                    orders
+                )
+        }
 
 
 viewCreate : CreateModel -> Html Msg
