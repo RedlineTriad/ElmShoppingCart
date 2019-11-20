@@ -62,6 +62,8 @@ type Msg
     | LoginMsg Login.Msg
     | OrderMsg Order.Msg
     | NavbarMsg Navbar.State
+    | DeleteOrder Order.Order
+    | DeletedOrder (Result Http.Error ())
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -101,6 +103,22 @@ update msg model =
                 ( _, _ ) ->
                     Cmd.map (\a -> OrderMsg a) orderCmd
             )
+
+        DeleteOrder order ->
+            case model.login.jwt of
+                Just jwt ->
+                    ( model, Order.delete jwt order DeletedOrder )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        DeletedOrder _ ->
+            case model.login.jwt of
+                Just jwt ->
+                    ( model, Order.getOrders jwt GotOrders )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 
@@ -160,7 +178,7 @@ viewBody model =
             [ Grid.col []
                 [ case model.orders of
                     Just orders ->
-                        Order.viewOrders orders
+                        Order.viewOrders DeleteOrder orders
 
                     Nothing ->
                         text ""

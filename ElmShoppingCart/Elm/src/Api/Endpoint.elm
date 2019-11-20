@@ -1,4 +1,4 @@
-module Api.Endpoint exposing (Endpoint, Jwt, RequestConfig, decodeJwt, encodeJwt, getAuth, login, order, orders, post, postAuth, register, request, requestAuth, unwrap)
+module Api.Endpoint exposing (Endpoint, Jwt, RequestConfig, decodeJwt, deleteAuth, encodeJwt, getAuth, login, order, orders, post, postAuth, register, request, requestAuth, unwrap)
 
 import Http
 import Url.Builder as Builder exposing (QueryParameter)
@@ -80,6 +80,25 @@ getAuth endpoint jwt expect =
         , tracker = Nothing
         }
         jwt
+
+
+deleteAuth :
+    { url : Endpoint
+    , expect : Http.Expect a
+    , jwt : Jwt
+    }
+    -> Cmd a
+deleteAuth config =
+    requestAuth
+        { body = Http.emptyBody
+        , expect = config.expect
+        , headers = []
+        , method = "DELETE"
+        , timeout = Nothing
+        , url = config.url
+        , tracker = Nothing
+        }
+        config.jwt
 
 
 type alias RequestConfig a =

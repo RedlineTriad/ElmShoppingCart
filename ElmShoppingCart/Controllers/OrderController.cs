@@ -1,4 +1,6 @@
-﻿using ElmShoppingCart.Models;
+﻿using AutoMapper;
+using ElmShoppingCart.Models;
+using ElmShoppingCart.Models.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +19,13 @@ namespace ElmShoppingCart.Controllers
     {
         private readonly AppDbContext context;
         private readonly UserManager<AppUser> userManager;
+        private readonly IMapper mapper;
 
-        public OrderController(AppDbContext context, UserManager<AppUser> userManager)
+        public OrderController(AppDbContext context, UserManager<AppUser> userManager, IMapper mapper)
         {
             this.context = context;
             this.userManager = userManager;
+            this.mapper = mapper;
         }
 
         // GET: api/Order
@@ -33,30 +37,26 @@ namespace ElmShoppingCart.Controllers
 
         // GET: api/Order/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> GetOrder(Guid id)
+        public async Task<ActionResult<OrderViewModel>> GetOrder(Guid id)
         {
             var order = await context.Order.FindAsync(id);
 
-            return order ?? (ActionResult<Order>)NotFound();
+            return mapper.Map<OrderViewModel>(order) ?? (ActionResult<OrderViewModel>)NotFound();
         }
 
         // POST: api/Order
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<Order>> PostOrder(
-            [Bind(new [] {
-                nameof(Order.Amount),
-                nameof(Order.Product)
-            })]
-            Order order)
+        public async Task<ActionResult<Order>> PostOrder(CreateOrderViewModel orderViewModel)
         {
+            var order = mapper.Map<Order>(orderViewModel);
             order.Author = await userManager.GetUserAsync(User);
             order.CreationTime = DateTime.Now;
             context.Order.Add(order);
             await context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, mapper.Map<OrderViewModel>(order));
         }
 
         // DELETE: api/Order/5
@@ -69,7 +69,7 @@ namespace ElmShoppingCart.Controllers
                 return NotFound();
             }
 
-            if(order.Author != await userManager.GetUserAsync(User))
+            if(order.AuthorId != (await userManager.GetUserAsync(User))?.Id)
             {
                 return Unauthorized();
             }

@@ -1,4 +1,4 @@
-module Order exposing (CreateModel, Msg(..), Order, addOrder, createInit, getOrders, orderDecoder, updateCreate, viewCreate, viewOrder, viewOrders)
+module Order exposing (CreateModel, Msg(..), Order, addOrder, createInit, delete, getOrders, orderDecoder, updateCreate, viewCreate, viewOrders)
 
 import Api.Endpoint as Endpoint exposing (Jwt)
 import Bootstrap.Button as Button
@@ -54,8 +54,8 @@ type alias CreateForm =
 -- VIEW
 
 
-viewOrders : List Order -> Html msg
-viewOrders orders =
+viewOrders : (Order -> msg) -> List Order -> Html msg
+viewOrders deleteMsg orders =
     Table.table
         { options = [ Table.striped, Table.hover ]
         , thead =
@@ -70,6 +70,7 @@ viewOrders orders =
                         Table.tr []
                             [ Table.td [] [ text order.product ]
                             , Table.td [] [ text (String.fromInt order.amount) ]
+                            , Table.td [] [ Button.button [ Button.danger, Button.onClick (deleteMsg order) ] [ text "Delete" ] ]
                             ]
                     )
                     orders
@@ -173,6 +174,15 @@ addOrder jwt form expect =
     Endpoint.postAuth
         { url = Endpoint.orders
         , body = Http.jsonBody (createFormEncoder form)
+        , expect = Http.expectWhatever expect
+        , jwt = jwt
+        }
+
+
+delete : Jwt -> Order -> (Result Http.Error () -> msg) -> Cmd msg
+delete jwt order expect =
+    Endpoint.deleteAuth
+        { url = Endpoint.order order.id
         , expect = Http.expectWhatever expect
         , jwt = jwt
         }
