@@ -4,16 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="elm.js"></script>
 </head>
 
 <body>
-    <div id="elm-app-is-loaded-here"></div>
-
-    <script src="elm.js"></script>
-    <script>
-      var app = Elm.Main.init({
-        node: document.getElementById("elm-app-is-loaded-here")
-      });
-    </script>
+    <script>var app = Elm.Main.init();</script>
 </body>
 </html>

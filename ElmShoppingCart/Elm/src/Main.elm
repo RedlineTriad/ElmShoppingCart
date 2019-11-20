@@ -107,12 +107,14 @@ update msg model =
 ---- VIEW ----
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    Grid.container []
+    { title = "Shopping List"
+    , body =
         [ viewHeader model
         , viewBody model
         ]
+    }
 
 
 viewHeader : Model -> Html Msg
@@ -185,7 +187,7 @@ viewBody model =
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.document
         { view = view
         , init = \_ -> init
         , update = update
