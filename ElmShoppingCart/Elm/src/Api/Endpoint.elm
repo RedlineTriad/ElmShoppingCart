@@ -1,4 +1,4 @@
-module Api.Endpoint exposing (Endpoint, Jwt, RequestConfig, decodeJwt, encodeJwt, getAuth, login, order, orders, register, request, requestAuth, unwrap)
+module Api.Endpoint exposing (Endpoint, Jwt, RequestConfig, decodeJwt, encodeJwt, getAuth, login, order, orders, post, postAuth, register, request, requestAuth, unwrap)
 
 import Http
 import Url.Builder as Builder exposing (QueryParameter)
@@ -31,6 +31,40 @@ requestAuth config jwt =
         , timeout = config.timeout
         , url = config.url
         , tracker = config.tracker
+        }
+
+
+postAuth :
+    { url : Endpoint
+    , body : Http.Body
+    , expect : Http.Expect a
+    , jwt : Jwt
+    }
+    -> Cmd a
+postAuth config =
+    requestAuth
+        { body = config.body
+        , expect = config.expect
+        , headers = []
+        , method = "POST"
+        , timeout = Nothing
+        , url = config.url
+        , tracker = Nothing
+        }
+        config.jwt
+
+
+post :
+    { url : Endpoint
+    , body : Http.Body
+    , expect : Http.Expect a
+    }
+    -> Cmd a
+post config =
+    Http.post
+        { url = unwrap config.url
+        , body = config.body
+        , expect = config.expect
         }
 
 

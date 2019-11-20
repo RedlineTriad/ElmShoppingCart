@@ -2,10 +2,7 @@ module Login exposing (Model, Msg, init, update, view)
 
 import Api.Endpoint as Endpoint
 import Bootstrap.Button as Button
-import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
-import Bootstrap.Form.InputGroup as InputGroup
-import Bootstrap.Text as Text
 import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (..)
 import Http as Http
@@ -51,14 +48,14 @@ update msg model =
         GotJWT (Ok jwt) ->
             ( { model | loggingIn = False, jwt = Just (Endpoint.encodeJwt jwt) }, Cmd.none )
 
-        GotJWT (Err err) ->
+        GotJWT (Err _) ->
             ( { model | loggingIn = False }, Cmd.none )
 
 
 view : Model -> List (Html Msg)
 view model =
     case ( model.jwt, model.loggingIn ) of
-        ( Just string, _ ) ->
+        ( Just _, _ ) ->
             [ p [] [ text "Logged in" ] ]
 
         ( Nothing, False ) ->
@@ -73,9 +70,10 @@ view model =
             [ p [] [ text "Logging in" ] ]
 
 
+getJWT : String -> String -> Cmd Msg
 getJWT email password =
-    Http.post
-        { url = "/api/account/login"
+    Endpoint.post
+        { url = Endpoint.login
         , body = Http.jsonBody (loginEncoder email password)
         , expect = Http.expectString GotJWT
         }

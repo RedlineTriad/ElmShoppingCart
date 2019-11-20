@@ -19,6 +19,7 @@ import Http as Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra as JDE
 import Login as Login
+import Order as Order
 import Time as Time exposing (..)
 
 
@@ -27,19 +28,11 @@ import Time as Time exposing (..)
 
 
 type alias Model =
-    { orders : Maybe (List Order)
+    { orders : Maybe (List Order.Order)
     , loading : Bool
     , login : Login.Model
     , navbarState : Navbar.State
-    }
-
-
-type alias Order =
-    { id : String
-    , authorId : String
-    , product : String
-    , amount : Int
-    , creationTime : Posix
+    , orderModel : Order.CreateModel
     }
 
 
@@ -53,6 +46,7 @@ init =
       , loading = False
       , login = Login.init
       , navbarState = navbarState
+      , orderModel = Order.createInit
       }
     , navbarCmd
     )
@@ -64,8 +58,9 @@ init =
 
 type Msg
     = GetOrders Endpoint.Jwt
-    | GotOrders (Result Http.Error (List Order))
+    | GotOrders (Result Http.Error (List Order.Order))
     | LoginMsg Login.Msg
+    | OrderMsg Order.Msg
     | NavbarMsg Navbar.State
 
 
@@ -85,13 +80,27 @@ update msg model =
             ( { model | navbarState = state }, Cmd.none )
 
         GetOrders jwt ->
-            ( { model | loading = True }, getOrders jwt )
+            ( { model | loading = True }, Order.getOrders jwt GotOrders )
 
         GotOrders (Ok orders) ->
             ( { model | loading = False, orders = Just orders }, Cmd.none )
 
-        GotOrders (Err err) ->
+        GotOrders (Err _) ->
             ( { model | loading = False }, Cmd.none )
+
+        OrderMsg orderMsg ->
+            let
+                ( orderModel, orderCmd ) =
+                    Order.updateCreate orderMsg model.orderModel model.login.jwt
+            in
+            ( { model | orderModel = orderModel }
+            , case ( orderMsg, model.login.jwt ) of
+                ( Order.AddedOrder _, Just jwt ) ->
+                    Cmd.batch [ Cmd.map (\a -> OrderMsg a) orderCmd, Order.getOrders jwt GotOrders ]
+
+                ( _, _ ) ->
+                    Cmd.map (\a -> OrderMsg a) orderCmd
+            )
 
 
 
@@ -150,26 +159,24 @@ viewBody model =
                 [ Grid.col []
                     (case model.orders of
                         Just orders ->
-                            orders |> List.map viewOrder
+                            orders |> List.map Order.viewOrder
 
                         Nothing ->
                             [ text "" ]
                     )
                 ]
+            , Grid.row []
+                [ Grid.col []
+                    [ case model.login.jwt of
+                        Just _ ->
+                            Html.map (\a -> OrderMsg a) (Order.viewCreate model.orderModel)
+
+                        Nothing ->
+                            text ""
+                    ]
+                ]
             ]
         ]
-
-
-viewOrder : Order -> Html msg
-viewOrder order =
-    Card.config [ Card.attrs [ Spacing.my2 ] ]
-        |> Card.header [ class "text-center" ]
-            [ h3 [ Spacing.mt2 ] [ text order.product ] ]
-        |> Card.block []
-            [ Block.text [] [ text (String.fromInt order.amount) ]
-            , Block.text [] [ text <| String.fromInt <| toDay utc order.creationTime ]
-            ]
-        |> Card.view
 
 
 
@@ -188,20 +195,3 @@ main =
 
 
 ---- HTTP ----
-
-
-getOrders jwt =
-    Endpoint.getAuth
-        Endpoint.orders
-        jwt
-        (Http.expectJson GotOrders (Decode.list orderDecoder))
-
-
-orderDecoder : Decoder Order
-orderDecoder =
-    Decode.map5 Order
-        (Decode.field "id" Decode.string)
-        (Decode.field "authorId" Decode.string)
-        (Decode.field "product" Decode.string)
-        (Decode.field "amount" Decode.int)
-        (Decode.field "creationTime" JDE.datetime)
