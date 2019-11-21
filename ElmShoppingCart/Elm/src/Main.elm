@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Api.Endpoint as Endpoint
+import Api.Endpoint as Endpoint exposing (Jwt)
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -20,7 +20,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra as JDE
 import Loading as Loading exposing (Loading(..))
 import Login as Login
-import Order as Order
+import OrderView as OrderView
 import Time as Time exposing (..)
 
 
@@ -29,10 +29,9 @@ import Time as Time exposing (..)
 
 
 type alias Model =
-    { orders : Loading Http.Error (List Order.Order)
-    , login : Login.Model
+    { login : Login.Model
     , navbarState : Navbar.State
-    , orderModel : Order.CreateModel
+    , orderModel : OrderView.Model
     }
 
 
@@ -42,10 +41,9 @@ init =
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg
     in
-    ( { orders = NotAsked
-      , login = Login.init
+    ( { login = Login.init
       , navbarState = navbarState
-      , orderModel = Order.createInit
+      , orderModel = OrderView.init
       }
     , navbarCmd
     )
@@ -56,13 +54,9 @@ init =
 
 
 type Msg
-    = GetOrders Endpoint.Jwt
-    | GotOrders (Result Http.Error (List Order.Order))
-    | LoginMsg Login.Msg
-    | OrderMsg Order.Msg
+    = LoginMsg Login.Msg
+    | OrderViewMsg Jwt OrderView.Msg
     | NavbarMsg Navbar.State
-    | DeleteOrder Endpoint.Jwt Order.Order
-    | DeletedOrder (Result Http.Error ())
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,39 +74,14 @@ update msg model =
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )
 
-        GetOrders jwt ->
-            ( { model | orders = Loading.toLoading model.orders }, Order.getOrders jwt GotOrders )
-
-        GotOrders (Ok orders) ->
-            ( { model | orders = Success orders }, Cmd.none )
-
-        GotOrders (Err err) ->
-            ( { model | orders = Failure err }, Cmd.none )
-
-        OrderMsg orderMsg ->
+        OrderViewMsg jwt orderMsg ->
             let
                 ( orderModel, orderCmd ) =
-                    Order.updateCreate orderMsg model.orderModel (Loading.toMaybe model.login.jwt)
+                    OrderView.update orderMsg model.orderModel jwt
             in
             ( { model | orderModel = orderModel }
-            , case ( orderMsg, Loading.toMaybe model.login.jwt ) of
-                ( Order.AddedOrder _, Just jwt ) ->
-                    Cmd.batch [ Cmd.map (\a -> OrderMsg a) orderCmd, Order.getOrders jwt GotOrders ]
-
-                ( _, _ ) ->
-                    Cmd.map (\a -> OrderMsg a) orderCmd
+            , Cmd.map (\a -> OrderViewMsg jwt a) orderCmd
             )
-
-        DeleteOrder jwt order ->
-            ( model, Order.delete jwt order DeletedOrder )
-
-        DeletedOrder _ ->
-            case Loading.toMaybe model.login.jwt of
-                Just jwt ->
-                    ( model, Order.getOrders jwt GotOrders )
-
-                Nothing ->
-                    ( model, Cmd.none )
 
 
 
@@ -149,35 +118,14 @@ viewBody model =
     Grid.container []
         [ Grid.row []
             [ Grid.col []
-                [ case ( Loading.toMaybe model.login.jwt, Loading.toMaybe model.orders ) of
-                    ( Just jwt, Just orders ) ->
-                        Order.viewOrders (DeleteOrder jwt) orders
+                [ case Loading.toMaybe model.login.jwt of
+                    Just jwt ->
+                        Html.map (\a -> OrderViewMsg jwt a) (OrderView.view model.orderModel)
 
                     _ ->
                         text ""
                 ]
             ]
-        , case Loading.toMaybe model.login.jwt of
-            Just jwt ->
-                Grid.row []
-                    [ Grid.col [] [ Html.map (\a -> OrderMsg a) (Order.viewCreate model.orderModel) ]
-                    , Grid.col []
-                        [ Button.button
-                            [ Button.primary, Button.attrs [ onClick (GetOrders jwt) ] ]
-                            (case model.orders of
-                                Loading _ ->
-                                    [ Spinner.spinner [ Spinner.small, Spinner.attrs [ Spacing.mr1 ] ] []
-                                    , text "Loading..."
-                                    ]
-
-                                _ ->
-                                    [ text "Refresh" ]
-                            )
-                        ]
-                    ]
-
-            Nothing ->
-                text ""
         ]
 
 

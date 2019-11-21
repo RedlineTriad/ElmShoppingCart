@@ -1,4 +1,4 @@
-module Loading exposing (Loading(..), toLoading, toMaybe)
+module Loading exposing (Loading(..), fromResult, isLoading, toLoading, toMaybe)
 
 
 type Loading error value
@@ -32,3 +32,23 @@ toLoading loading =
 
         a ->
             a
+
+
+fromResult : Result a b -> Loading a b
+fromResult result =
+    case result of
+        Ok b ->
+            Success b
+
+        Err a ->
+            Failure a
+
+
+isLoading : Loading a b -> Bool
+isLoading loading =
+    case loading of
+        Loading _ ->
+            True
+
+        _ ->
+            False
