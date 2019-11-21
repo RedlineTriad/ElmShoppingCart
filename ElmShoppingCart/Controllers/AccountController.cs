@@ -48,7 +48,7 @@ namespace ElmShoppingCart.Controllers
                 }
             }
 
-            return BadRequest();
+            return BadRequest(ModelState);
         }
 
         [HttpPost]
@@ -70,7 +70,7 @@ namespace ElmShoppingCart.Controllers
                 }
             }
 
-            return BadRequest();
+            return BadRequest(ModelState);
         }
 
         [HttpGet]
